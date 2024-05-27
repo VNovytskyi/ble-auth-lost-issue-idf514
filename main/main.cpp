@@ -3,6 +3,12 @@
 #include "NimBLELog.h"
 
 #include <stdio.h>
+#include <inttypes.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "nvs.h"
 
 extern "C" {
     void app_main(void);
@@ -13,7 +19,7 @@ static NimBLEServer* pServer;
 class ServerCallbacks: public NimBLEServerCallbacks {
     void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) {
         printf("\nClient address: %s\n", connInfo.getAddress().toString().c_str());
-        pServer->updateConnParams(connInfo.getConnHandle(), 24, 48, 0, 18);
+        // pServer->updateConnParams(connInfo.getConnHandle(), 24, 48, 0, 18);
     };
 
     void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) {
@@ -23,16 +29,14 @@ class ServerCallbacks: public NimBLEServerCallbacks {
 
     void onMTUChange(uint16_t MTU, NimBLEConnInfo& connInfo) {
         printf("MTU updated: %u for connection ID: %u\n", MTU, connInfo.getConnHandle());
-        pServer->updateConnParams(connInfo.getConnHandle(), 24, 48, 0, 60);
+        // pServer->updateConnParams(connInfo.getConnHandle(), 24, 48, 0, 60);
     };
 
     uint32_t onPassKeyRequest(){
-        printf("Server Passkey Request\n");
         return 123456;
     };
 
     bool onConfirmPIN(uint32_t pass_key){
-        printf("The passkey YES/NO number: %" PRIu32"\n", pass_key);
         return true;
     };
 
@@ -120,6 +124,15 @@ static CharacteristicCallbacks chrCallbacks;
 void app_main(void) {
     printf("Starting NimBLE Server\n");
 
+    // Initialize NVS
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
+
+
     NimBLEDevice::init("NimBLE");
     NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);
 
@@ -132,11 +145,8 @@ void app_main(void) {
     NimBLEService* pDeadService = pServer->createService("DEAD");
     NimBLECharacteristic* pBeefCharacteristic = pDeadService->createCharacteristic(
                                                "BEEF",
-                                               NIMBLE_PROPERTY::READ |
-                                               NIMBLE_PROPERTY::WRITE |
-                                               NIMBLE_PROPERTY::READ_ENC | 
-                                               NIMBLE_PROPERTY::WRITE_ENC
-                                              );
+                                               NIMBLE_PROPERTY::READ  | NIMBLE_PROPERTY::READ_ENC |
+                                               NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_ENC);
 
     pBeefCharacteristic->setValue("Burger");
     pBeefCharacteristic->setCallbacks(&chrCallbacks);
