@@ -38,6 +38,6 @@ Encrypted:     Yes
 Bonded:        Yes
 ```
 ## Expected result
-The "Authenticated" flag after an update is "Yes"
+The "Authenticated" flag after an firmware update is "Yes"
 ## Actual result
-The "Authenticated" flag after an update is "No"
+The "Authenticated" flag after an firmware update is "No"
