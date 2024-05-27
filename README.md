@@ -1,4 +1,4 @@
-# ble-auth-lost-issue-idf514
+# ble-auth-lost-issue-idf514 (IDFGH-12905)
 A test project to reproduce the issue related to BLE client authentication when switching from version ESP-IDF 5.1.3 to version ESP-IDF 5.1.4. 
 The problem is that the BLE bond (procedure or data format) on 5.1.3 is different from 5.1.4 and when upgrading to a new version, the authorization flag is reset, but the others do not change.
 
