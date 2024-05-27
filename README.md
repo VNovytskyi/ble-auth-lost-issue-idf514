@@ -41,3 +41,5 @@ Bonded:        Yes
 The "Authenticated" flag after an firmware update is "Yes"
 ## Actual result
 The "Authenticated" flag after an firmware update is "No"
+## Notes
+Password: 123456
